@@ -128,8 +128,6 @@ void SurfaceFromPoints::computeIsoValuesScatter(MCGrid&						mcgrid,
 	sumGradWj.resize(nbGridVertices, Vector3DF(0.0,0.0,0.0));
 	sumRjWj.resize(nbGridVertices, Vector3DF(0.0,0.0,0.0));
 
-    //std::cout << "influenceRadius2: " << influenceRadius2 << std::endl;
-
 	// Traverse points and add their contribution to nearby cells
 	int nbPoints = points.size();
     //std::cout << "nbPoints: " << nbPoints << std::endl;
@@ -151,28 +149,11 @@ void SurfaceFromPoints::computeIsoValuesScatter(MCGrid&						mcgrid,
 				{
 					unsigned int cellIndex = mcgrid.getGridIndex(ix, iy, iz);
 
-                    /*if (p == 0)
-                        std::cout << "p = [" << points[p].x  << "," << points[p].y << "," << points[p].z << "]" << std::endl;
-
-                    if (p == 0)
-                        std::cout << "cellIndex: " << cellIndex << std::endl;*/
-
 					mcgrid.getVertexPosition(ix, iy, iz, vertexPos);
-
-                    /*if (p == 0)
-                        std::cout << "vertexPos: [" << vertexPos.x << "," << vertexPos.y << "," << vertexPos.z << "]" << std::endl;*/
-
-					// Is cell inside influence radius?
 					Vector3DF delta(vertexPos);
 					delta -= points[p];
 
-                    //if (p == 0)
-                    //    std::cout << "delta: [" << delta.x << "," << delta.y << "," << delta.z << "]" << std::endl;
-
 					double dist2 = delta.x*delta.x + delta.y*delta.y + delta.z*delta.z;
-
-                    /*if (p == 0)
-                        std::clog << "dist2: " << dist2 << std::endl;*/
 
 					if (dist2 < influenceRadius2)
 					{
@@ -196,15 +177,6 @@ void SurfaceFromPoints::computeIsoValuesScatter(MCGrid&						mcgrid,
 						sumRjGradWjT[cellIndex](0,2) += points[p].z*gradWj.x;
 						sumRjGradWjT[cellIndex](1,2) += points[p].z*gradWj.y;
 						sumRjGradWjT[cellIndex](2,2) += points[p].z*gradWj.z;
-
-                        /*if (p == 0)
-                        {
-                            std::cout << "sumRjGradWjT" << std::endl;
-                            std::cout << std::scientific;
-                            std::cout << "[" << sumRjGradWjT[cellIndex](0,0) << " " << sumRjGradWjT[cellIndex](0,1) << " " << sumRjGradWjT[cellIndex](0,2) << "]" << std::endl;
-                            std::cout << "[" << sumRjGradWjT[cellIndex](1,0) << " " << sumRjGradWjT[cellIndex](1,1) << " " << sumRjGradWjT[cellIndex](1,2) << "]" << std::endl;
-                            std::cout << "[" << sumRjGradWjT[cellIndex](2,0) << " " << sumRjGradWjT[cellIndex](2,1) << " " << sumRjGradWjT[cellIndex](2,2) << "]" << std::endl;
-                        }*/
 						
 						sumGradWj[cellIndex] += gradWj;
 						
@@ -217,10 +189,7 @@ void SurfaceFromPoints::computeIsoValuesScatter(MCGrid&						mcgrid,
 
 				}
 			}
-		}
-
-        //if (p == 0)
-            //std::cout << "test count: " << c << std::endl;
+        }
 	}
 
 	// Compute cells isoValues
@@ -235,9 +204,6 @@ void SurfaceFromPoints::computeIsoValuesScatter(MCGrid&						mcgrid,
 		double isoValue = 1.0;
 		if (sumWj[c] > 0.0)
 		{
-            /*if (c < 10000)
-                std::cout << "cell = " << c << std::endl;*/
-
 			mcgrid.getVertexPosition(ix, iy, iz, vertexPos);
 
 			// Compute average position ( SUM(rj*Wj)/SUM(Wj) )
@@ -257,17 +223,6 @@ void SurfaceFromPoints::computeIsoValuesScatter(MCGrid&						mcgrid,
 			sumGradWjSumRjWjT(2,1) = sumGradWj[c].z*sumRjWj[c].y;
 			sumGradWjSumRjWjT(2,2) = sumGradWj[c].z*sumRjWj[c].z;
 
-            /*if (c == 4370)
-            {
-                std::cout << "cell = " << c << std::endl;
-                std::cout << "[" << sumGradWjSumRjWjT(0,0) << " " << sumGradWjSumRjWjT(0,1) << " " << sumGradWjSumRjWjT(0,2) << "]" << std::endl;
-                std::cout << "[" << sumGradWjSumRjWjT(1,0) << " " << sumGradWjSumRjWjT(1,1) << " " << sumGradWjSumRjWjT(1,2) << "]" << std::endl;
-                std::cout << "[" << sumGradWjSumRjWjT(2,0) << " " << sumGradWjSumRjWjT(2,1) << " " << sumGradWjSumRjWjT(2,2) << "]" << std::endl;
-            }*/
-
-            /*Eigen::Matrix3d gradAvgPosition =
-                ((1.0/sumWj[c]) * sumRjGradWjT[c]) - ((1.0/(sumWj[c]*sumWj[c])) * sumGradWjSumRjWjT);*/
-
             double apTerm1 = 1.0/sumWj[c];
             //glm::dmat3x3 apTerm2 = apTerm1 * sumRjGradWjT[c];
             Eigen::Matrix3d apTerm2;
@@ -278,58 +233,14 @@ void SurfaceFromPoints::computeIsoValuesScatter(MCGrid&						mcgrid,
             double apTerm3 = 1.0/(sumWj[c]*sumWj[c]);
             Eigen::Matrix3d gradAvgPosition;// = apTerm2 - (apTerm3 * sumGradWjSumRjWjT);
             for (int i = 0; i <= 2; ++i)
+            {
                 for (int j = 0; j <= 2; ++j)
                 {
                     double apTerm2IJ = apTerm2(i,j);
                     double sumIJ = sumGradWjSumRjWjT(i,j);
                     gradAvgPosition(i,j) = apTerm2IJ - (apTerm3 * sumIJ);
-                    /*if (c == 4370)
-                    {
-                        std::clog << "apTerm2IJ: " << apTerm2IJ << std::endl;
-                        std::clog << "sumIJ: " << sumIJ << std::endl;
-                        std::clog << "arrayGradAvgPosition[" << i << "][" << j << "] = " << gradAvgPosition(i,j) << std::endl;
-                    }*/
                 }
-
-            /*if (c == 4370)
-            {
-                std::cout << "apTerm1 = " << apTerm1 << std::endl;
-                std::cout << "apTerm2" << std::endl;
-                std::cout << std::scientific;
-                std::cout << "[" << apTerm2(0,0) << " " << apTerm2(0,1) << " " << apTerm2(0,2) << "]" << std::endl;
-                std::cout << "[" << apTerm2(1,0) << " " << apTerm2(1,1) << " " << apTerm2(1,2) << "]" << std::endl;
-                std::cout << "[" << apTerm2(2,0) << " " << apTerm2(2,1) << " " << apTerm2(2,2) << "]" << std::endl;
-                std::cout << "apTerm3 = " << apTerm1 << std::endl;
-
-                std::cout << "sumWj[c] = " << sumWj[c] << std::endl;
-
-                std::cout << "sumRjGradWjT" << std::endl;
-                std::cout << std::scientific;
-                std::cout << "[" << sumRjGradWjT[c](0,0) << " " << sumRjGradWjT[c](0,1) << " " << sumRjGradWjT[c](0,2) << "]" << std::endl;
-                std::cout << "[" << sumRjGradWjT[c](1,0) << " " << sumRjGradWjT[c](1,1) << " " << sumRjGradWjT[c](1,2) << "]" << std::endl;
-                std::cout << "[" << sumRjGradWjT[c](2,0) << " " << sumRjGradWjT[c](2,1) << " " << sumRjGradWjT[c](2,2) << "]" << std::endl;
-
-                std::cout << "sumGradWjSumRjWjT" << std::endl;
-                std::cout << std::scientific;
-                std::cout << "[" << sumGradWjSumRjWjT(0,0) << " " << sumGradWjSumRjWjT(0,1) << " " << sumGradWjSumRjWjT(0,2) << "]" << std::endl;
-                std::cout << "[" << sumGradWjSumRjWjT(1,0) << " " << sumGradWjSumRjWjT(1,1) << " " << sumGradWjSumRjWjT(1,2) << "]" << std::endl;
-                std::cout << "[" << sumGradWjSumRjWjT(2,0) << " " << sumGradWjSumRjWjT(2,1) << " " << sumGradWjSumRjWjT(2,2) << "]" << std::endl;
-
-
-                std::cout << "gradAvgPosition" << std::endl;
-                std::cout << std::scientific;
-                std::cout << "[" << gradAvgPosition(0,0) << " " << gradAvgPosition(0,1) << " " << gradAvgPosition(0,2) << "]" << std::endl;
-                std::cout << "[" << gradAvgPosition(1,0) << " " << gradAvgPosition(1,1) << " " << gradAvgPosition(1,2) << "]" << std::endl;
-                std::cout << "[" << gradAvgPosition(2,0) << " " << gradAvgPosition(2,1) << " " << gradAvgPosition(2,2) << "]" << std::endl;
-            }*/
-
-            /*if (c == 4370)
-            {
-                std::cout << "cell = " << c << std::endl;
-                std::cout << "[" << gradAvgPosition(0,0) << " " << gradAvgPosition(0,1) << " " << gradAvgPosition(0,2) << "]" << std::endl;
-                std::cout << "[" << gradAvgPosition(1,0) << " " << gradAvgPosition(1,1) << " " << gradAvgPosition(1,2) << "]" << std::endl;
-                std::cout << "[" << gradAvgPosition(2,0) << " " << gradAvgPosition(2,1) << " " << gradAvgPosition(2,2) << "]" << std::endl;
-            }*/
+            }
 
 			// Find maximum eigenvalue of the gradient using the
 			// Power method 
@@ -379,16 +290,8 @@ void SurfaceFromPoints::computeIsoValuesScatter(MCGrid&						mcgrid,
 					oldMaxValue = maxValue;
 				}
 
-                /*if (c == 0 && i == 499)
-                {
-                    std::cout << "x = [" << x[0] << "," << x[1] << "," << x[2] << "]" << std::endl;
-                    std::cout << "i = " << i << std::endl;
-                    std::cout << "error = " << error << std::endl;
-                    std::cout << "threshold = " << threshold << std::endl;
-                }*/
-
-				// TODO: We could check if maxValue moves away from range [tlow, thigh] and
-				// terminate earlier the algorithm! (Smarter, faster!)
+                // TODO: We could check if maxValue moves away from range [tlow, thigh] and
+                // terminate earlier the algorithm! (Smarter, faster!)
 			}
 
 			double EVmax = fabs(maxValue);

@@ -40,21 +40,12 @@ void MCGrid::initGrid(double cubeSize, const Vector3DF& volumeMin, const Vector3
 	_resY = static_cast<int>(ceil((volumeMax.y-volumeMin.y)/cubeSize));
 	_resZ = static_cast<int>(ceil((volumeMax.z-volumeMin.z)/cubeSize));
 
-	//std::cout << "_resX = " << _resX << std::endl;
-	//std::cout << "_resY = " << _resX << std::endl;
-	//std::cout << "_resZ = " << _resX << std::endl;
-
 	// Compute grid dimensions
 	_cubeSize = cubeSize;
 	_volMin = volumeMin;
 
-	//std::cout << "_cubeSize = " << _cubeSize << std::endl;
-	//std::cout << "_volumeMin = " << _volMin.x <<  ", " << _volMin.y << ", " << _volMin.z << std::endl;
-
 	_dimensions = Vector3DF(_resX, _resY, _resZ);
 	_dimensions *= _cubeSize;
-
-	//std::cout << "_dimensions = " << _dimensions.x <<  ", " << _dimensions.y << ", " << _dimensions.z << std::endl;
 
 	// Init vertices data
 	_nbVertices = _resX*_resY*_resZ;
@@ -80,17 +71,10 @@ void MCGrid::triangulate(Mesh& mesh)
 	{
 		MCVertex &vertex = _verticesData[v];
 
-		/*std::cout << "(" << v << ") " << 
-			"value= " << vertex.value << ", " <<
-			"gridIndex=" << vertex.gridIndex << std::endl;*/
-
 		// Make sure the vertex is associated with a cell
 		unsigned int ix = getXIndex(vertex.gridIndex);
 		unsigned int iy = getYIndex(vertex.gridIndex);
 		unsigned int iz = getZIndex(vertex.gridIndex);
-		//if (ix>=_resX) std::cout << "Depassement en x" << std::endl;
-		//if (iy>=_resY) std::cout << "Depassement en y" << std::endl;
-		//if (iz>=_resZ) std::cout << "Depassement en z" << std::endl;
 		if ((ix < (_resX-1)) && (iy < (_resY-1)) && (iz < (_resZ-1)))
 		{
 			//std::cout << "is associated with a cell" << std::endl;
@@ -105,39 +89,6 @@ void MCGrid::triangulate(Mesh& mesh)
 			int v7 = _vertices[getGridIndex(ix+1, iy+1, iz+1)];
 			int v8 = _vertices[getGridIndex(ix  , iy+1, iz+1)];
 
-            /*if (v < 10000)
-            {
-                std::clog << "v1 = " << v1 << std::endl;
-                std::clog << "v2 = " << v2 << std::endl;
-                std::clog << "v3 = " << v3 << std::endl;
-                std::clog << "v4 = " << v4 << std::endl;
-                std::clog << "v5 = " << v5 << std::endl;
-                std::clog << "v6 = " << v6 << std::endl;
-                std::clog << "v7 = " << v7 << std::endl;
-                std::clog << "v8 = " << v8 << std::endl;
-            }*/
-/*
-			std::cout << "res = " << _resX << ", " << _resY << ", " << _resZ << std::endl;
-			std::cout << "ix, iy, iz= " << ix << ", " << iy << ", " << iz << std::endl;
-
-			std::cout << "getGridIndex = " << getGridIndex(ix,   iy,   iz) << std::endl;
-			std::cout << "getGridIndex = " << getGridIndex(ix+1,   iy,   iz) << std::endl;
-			std::cout << "getGridIndex = " << getGridIndex(ix+1,   iy+1,   iz) << std::endl;
-			std::cout << "getGridIndex = " << getGridIndex(ix,   iy+1,   iz) << std::endl;
-			std::cout << "getGridIndex = " << getGridIndex(ix,   iy,   iz+1) << std::endl;
-			std::cout << "getGridIndex = " << getGridIndex(ix+1,   iy,   iz+1) << std::endl;
-			std::cout << "getGridIndex = " << getGridIndex(ix+1,   iy+1,   iz+1) << std::endl;
-			std::cout << "getGridIndex = " << getGridIndex(ix,   iy+1,   iz+1) << std::endl;
-
-			std::cout << "v1= " << v1 << std::endl;
-			std::cout << "v2= " << v2 << std::endl;
-			std::cout << "v3= " << v3 << std::endl;
-			std::cout << "v4= " << v4 << std::endl;
-			std::cout << "v5= " << v5 << std::endl;
-			std::cout << "v6= " << v6 << std::endl;
-			std::cout << "v7= " << v7 << std::endl;
-			std::cout << "v8= " << v8 << std::endl;
-*/
 			// Make sure all vertices has data
 			if (v1>=0 && v2>=0 && v3>=0 && v4>=0 && v5>=0 && v6>=0 && v7>=0 && v8>=0)
 			{
@@ -161,20 +112,6 @@ void MCGrid::triangulate(Mesh& mesh)
 				if (vertex6.value<0.0) cubeIndex |= 32;
 				if (vertex7.value<0.0) cubeIndex |= 64;
 				if (vertex8.value<0.0) cubeIndex |= 128;
-
-                /*if (v < 10000)
-                {
-                    std::cout << "vertex1.value = " << vertex1.value << std::endl;
-                    std::cout << "vertex2.value = " << vertex2.value << std::endl;
-                    std::cout << "vertex3.value = " << vertex3.value << std::endl;
-                    std::cout << "vertex4.value = " << vertex4.value << std::endl;
-                    std::cout << "vertex5.value = " << vertex5.value << std::endl;
-                    std::cout << "vertex6.value = " << vertex6.value << std::endl;
-                    std::cout << "vertex7.value = " << vertex7.value << std::endl;
-                    std::cout << "vertex8.value = " << vertex8.value << std::endl;
-                }*/
-
-                //std::cout << "cubeIndex: " << cubeIndex << std::endl;
 
 				// Make sure it is a surface cell
 				if ((cubeIndex != 0) && (cubeIndex != 255))
