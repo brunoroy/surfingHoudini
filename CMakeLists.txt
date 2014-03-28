@@ -4,31 +4,22 @@
 #
 cmake_minimum_required(VERSION 2.6)
 
-set(ProjectName MokkoSurfaceFromPoints)
-
+set(ProjectName SurfingSAT)
 
 ############## SET ############
-
-
 set(SRC .)
 set(ProjectSource ${SRC}/HoudiniSurfaceFromPoints)
 set(Eigen ${SRC}/eigen)
-set(HDK_Include "/opt/hfs12.5.562/toolkit/include")
-
-#add_definitions( -fpermissive)
 
 project(${ProjectName})
 
-
+# run our helper process to grab the compile and link flags from hcustom
+execute_process(COMMAND hdk-config.py --notag --cmake=/usr/share/cmake-2.8/Modules/FindHDK.cmake)
 
 ############# FIND PACKAGE ###############
 find_package(HDK)
 
 ############## HOUDINI ###################
-
-# run our helper process to grab the compile and link flags from hcustom
-execute_process(COMMAND hdk-config.py --notag --cmake=${CMAKE_BINARY_DIR}/FindHDK.cmake)
-
 # now get the HDK definitions from the FindHDK.cmake module that was just generated
 set(CMAKE_MODULE_PATH "${PROJECT_BINARY_DIR}")
 

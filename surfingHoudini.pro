@@ -7,7 +7,8 @@ TEMPLATE = lib
 CONFIG += plugin no_plugin_name_prefix
 
 HEADERS += \
-    include/*.h
+    include/*.h \
+    include/*.hpp
 
 SOURCES += \
     build/sesitag.C \
@@ -21,14 +22,14 @@ DEFINES += \
    _GNU_SOURCE \
    ENABLE_THREADS \
    ENABLE_UI_THREADS \
-   VERSION=HOUDINI_VERSION \
+   VERSION=$$HOUDINI_VERSION \
    LINUX \
    AMD64 \
    MAKING_DSO \
    SESI_LITTLE_ENDIAN \
    SWAP_BITFIELDS
 
-INCLUDEPATH += include external /opt/hfs$$HOUDINI_VERSION/toolkit/include /opt/hfs$$HOUDINI_VERSION/toolkit/include/htools /opt/hfs$$HOUDINI_VERSION/toolkit/include/OpenEXR
+INCLUDEPATH += include external external/eigen /opt/hfs$$HOUDINI_VERSION/toolkit/include /opt/hfs$$HOUDINI_VERSION/toolkit/include/htools /opt/hfs$$HOUDINI_VERSION/toolkit/include/OpenEXR
 
 #Houdini toolkit
 LIBS += -L/opt/hfs$$HOUDINI_VERSION/dsolib -lHoudiniUI -lHoudiniOPZ \

@@ -1,5 +1,5 @@
-#ifndef HOUDINISURFACEFROMPOINTS_H
-#define HOUDINISURFACEFROMPOINTS_H
+#ifndef HOUDINI_SURFING_H
+#define HOUDINI_SURFING_H
 
 #include "SurfaceFromPoints.h"
 
@@ -12,10 +12,10 @@ using Math::Vector3DF;
 
 using namespace std;
 
-class HoudiniSurfaceFromPoints : public SOP_Node {
+class SurfingHoudini : public SOP_Node {
 public:
-	HoudiniSurfaceFromPoints(OP_Network *net, const char *name, OP_Operator *op);
-	virtual ~HoudiniSurfaceFromPoints();
+    SurfingHoudini(OP_Network *net, const char *name, OP_Operator *op);
+    virtual ~SurfingHoudini();
 
 	static PRM_Template myTemplateList[];
 	static OP_Node *myConstructor(OP_Network*, const char *, OP_Operator *);
@@ -33,14 +33,9 @@ private:
 				   std::vector<double>&		densities,
 				   std::vector<double>&		sphRadius);
 
-	void outputGeometry(const							Mesh& mesh,
-						bool							outputNormals,
-						const std::vector<Vector3DF>&	normals);
-
-	void debugOutputPoints(const std::vector<Vector3DF>&	points,
-						   const std::vector<double>&		values);
+    void outputGeometry(const Mesh& mesh);
 
 	bool _hasSurfaceOnlyInformation;
 };
 
-#endif	// HOUDINISURFACEFROMPOINTS_H
+#endif	// HOUDINI_SURFING_H

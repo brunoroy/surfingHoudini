@@ -50,9 +50,7 @@ public:
 	const Vector3DF& getNormal(unsigned int ix, unsigned int iy, unsigned int iz) const;	// See MCGrid.hpp
 	
 
-	void triangulate(Mesh&						mesh,
-					 std::vector<Vector3DF>&	normals,
-					 bool						computeNormals);
+    void triangulate(Mesh& mesh);
 
 	unsigned int getGridIndex(unsigned int ix, unsigned int iy, unsigned int iz) const;	// See MCGrid.hpp
 	unsigned int getXIndex(unsigned int gridIndex) const; // See MCGrid.hpp

@@ -68,18 +68,10 @@ void MCGrid::initGrid(double cubeSize, const Vector3DF& volumeMin, const Vector3
 
 }
 
-void MCGrid::triangulate(Mesh&						mesh,
-						 std::vector<Vector3DF>&	normals,
-						 bool						computeNormals)
+void MCGrid::triangulate(Mesh& mesh)
 {
 	std::vector<Mesh::Triangle>&	triangles = mesh.triangles();
 	std::vector<Vector3DF>&			points = mesh.points();
-
-	// Compute normals at every grid vertices
-	if (computeNormals)
-	{
-		updateNormals();
-	}
 
 	// Iterate all cubes with data
 	int nbVerticesData = _verticesData.size();
@@ -192,35 +184,15 @@ void MCGrid::triangulate(Mesh&						mesh,
 					{
 						// Compute/get triangle points on edges
 						int p1, p2, p3;
-						if (computeNormals)
-						{
-							p1 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
-											  MC_LookupTable::trianglesList[cubeIndex][i+0]+1,
-											  points,
-											  normals);
-							p2 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
-											  MC_LookupTable::trianglesList[cubeIndex][i+1]+1,
-											  points,
-											  normals);
-							p3 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
-											  MC_LookupTable::trianglesList[cubeIndex][i+2]+1,
-											  points,
-											  normals);
-						}
-						else
-						{
-
-							p1 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
-											  MC_LookupTable::trianglesList[cubeIndex][i+0]+1,
-											  points);
-							p2 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
-											  MC_LookupTable::trianglesList[cubeIndex][i+1]+1,
-											  points);
-							p3 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
-											  MC_LookupTable::trianglesList[cubeIndex][i+2]+1,
-											  points);
-
-						}
+                        p1 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
+                                          MC_LookupTable::trianglesList[cubeIndex][i+0]+1,
+                                          points);
+                        p2 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
+                                          MC_LookupTable::trianglesList[cubeIndex][i+1]+1,
+                                          points);
+                        p3 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
+                                          MC_LookupTable::trianglesList[cubeIndex][i+2]+1,
+                                          points);
 
 						// Create triangle
 						triangles.push_back(Mesh::Triangle(p1, p2, p3));
