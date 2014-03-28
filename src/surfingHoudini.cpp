@@ -26,18 +26,21 @@ void newSopOperator(OP_OperatorTable *table) {
 // Plugin construction/destruction
 // -----------------------------------------------------------------------------
 static PRM_Name names[] = {
-    PRM_Name("resolution", "Resolution")
+    PRM_Name("resolution", "Resolution"),
+    PRM_Name("optimalThreshold", "Optimal threshold")
 };
 
 static PRM_Range unitRange(PRM_RANGE_RESTRICTED, 0.01f, PRM_RANGE_RESTRICTED, 0.5f);
 static PRM_Range positiveRange = PRMpositiveRange;
 
 static PRM_Default defaultValues[] = {
-    PRM_Default(0.1)
+    PRM_Default(0.1),
+    PRM_Default(0)
 };
 
 PRM_Template SurfingHoudini::myTemplateList[] = {
     PRM_Template(PRM_FLT_J,	1, &names[0], &defaultValues[0], 0, &unitRange),
+    PRM_Template(PRM_TOGGLE_J, 1, &names[1], &defaultValues[1]),
     PRM_Template()
 };
 
@@ -71,10 +74,7 @@ OP_ERROR SurfingHoudini::cookMySop(OP_Context &context) {
 
 	// Get input points
 	std::vector<Vector3DF>	inputPoints;
-	std::vector<double>		pointMasses;
-	std::vector<double>		pointDensities;
-	std::vector<double>		particlesSPHRadius;
-	getPoints(context, inputPoints, pointMasses, pointDensities, particlesSPHRadius);
+    getPoints(context, inputPoints);
 
 	// Make sure have at least one point
 	if (inputPoints.size()<1)
@@ -84,7 +84,6 @@ OP_ERROR SurfingHoudini::cookMySop(OP_Context &context) {
 	
 	// Generate surface
 	Mesh surface;
-	std::vector<Vector3DF> normals;
 	SurfaceFromPoints surfacer;
 
     surfacer.createSurfaceFromPoints(inputPoints, surface, resolution);
@@ -111,30 +110,14 @@ unsigned int SurfingHoudini::disableParms()
 }
 
 void SurfingHoudini::getPoints(OP_Context&				context,
-										 std::vector<Vector3DF>&	points,
-										 std::vector<double>&		masses,
-										 std::vector<double>&		densities,
-										 std::vector<double>&		sphRadius)
+                                         std::vector<Vector3DF>&	points)
 {
 	// Get source
 	const GU_Detail* source = inputGeo(0, context);
 	GEO_PointList pnts = source->points();
 
-	GA_ROAttributeRef srcMassAttr = source->findFloatTuple(GA_ATTRIB_POINT, "mass", 1);
-	GA_ROAttributeRef srcDensityAttr = source->findFloatTuple(GA_ATTRIB_POINT, "density", 1);
-	GA_ROAttributeRef srcSPHRadius = source->findFloatTuple(GA_ATTRIB_POINT, "pscale", 1);
-
-	_hasSurfaceOnlyInformation = (srcMassAttr.isValid() && srcDensityAttr.isValid()
-									&& srcSPHRadius.isValid());
-
 	// Allocate memory for points and properties
 	points.resize(pnts.entries());
-	if (_hasSurfaceOnlyInformation)
-	{
-		masses.resize(pnts.entries());
-		densities.resize(pnts.entries());
-		sphRadius.resize(pnts.entries());
-	}
 
 	// Get points
 	GEO_Point ppt(source->getPointMap(), GA_INVALID_OFFSET);
@@ -143,20 +126,13 @@ void SurfingHoudini::getPoints(OP_Context&				context,
 	for (int p=0; p<pnts.entries(); ++p)
 	{
 		// TODO: Should use source->getGEOPoint!!!
-		ppt = GEO_Point(source->getPointMap(), source->pointOffset(p));
+        ppt = GEO_Point(source->getPointMap(), source->pointOffset(p));
 
 		point.x = ppt.getPos3().x();
 		point.y = ppt.getPos3().y();
 		point.z = ppt.getPos3().z();
 
 		points[p] = point;
-
-		if (_hasSurfaceOnlyInformation)
-		{
-			masses[p] = ppt.getValue<float>(srcMassAttr);
-			densities[p] = ppt.getValue<float>(srcDensityAttr);	
-			sphRadius[p] = ppt.getValue<float>(srcSPHRadius);
-		}
 	}
 }
 
@@ -175,7 +151,7 @@ void SurfingHoudini::outputGeometry(const Mesh& mesh)
 	}
 
 	// Generate triangles
-	for (int t=0; t<triangles.size(); ++t)
+    for (int t=0; t<triangles.size(); ++t)
 	{
 		// Create primitive
 		GEO_PrimPoly *prim = dynamic_cast<GEO_PrimPoly*>(gdp->appendPrimitive(GEO_PRIMPOLY));

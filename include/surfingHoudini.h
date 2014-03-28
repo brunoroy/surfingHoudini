@@ -28,10 +28,7 @@ protected:
 
 private:
 	void getPoints(OP_Context&				context,
-				   std::vector<Vector3DF>&	points,
-				   std::vector<double>&		masses,
-				   std::vector<double>&		densities,
-				   std::vector<double>&		sphRadius);
+                   std::vector<Vector3DF>&	points);
 
     void outputGeometry(const Mesh& mesh);
 

@@ -48,8 +48,8 @@ void MCGrid::initGrid(double cubeSize, const Vector3DF& volumeMin, const Vector3
 	_dimensions *= _cubeSize;
 
 	// Init vertices data
-	_nbVertices = _resX*_resY*_resZ;
-	_vertices.resize(_nbVertices);
+    _nbVertices = _resX*_resY*_resZ;
+    _vertices.resize(_nbVertices);
 	for (int v=0; v<_nbVertices; ++v)
 	{
 		_vertices[v] = -1;	// By default, there's no vertex data
@@ -67,7 +67,7 @@ void MCGrid::triangulate(Mesh& mesh)
 	// Iterate all cubes with data
 	int nbVerticesData = _verticesData.size();
 	//std::cout << "nbVerticesData = " << nbVerticesData << std::endl;
-	for (int v=0; v<nbVerticesData; ++v)
+    for (int v=0; v<nbVerticesData; ++v)
 	{
 		MCVertex &vertex = _verticesData[v];
 
@@ -90,17 +90,17 @@ void MCGrid::triangulate(Mesh& mesh)
 			int v8 = _vertices[getGridIndex(ix  , iy+1, iz+1)];
 
 			// Make sure all vertices has data
-			if (v1>=0 && v2>=0 && v3>=0 && v4>=0 && v5>=0 && v6>=0 && v7>=0 && v8>=0)
-			{
+            if (v1>=0 && v2>=0 && v3>=0 && v4>=0 && v5>=0 && v6>=0 && v7>=0 && v8>=0)
+            {
 				// Get cell vertices data
 				MCVertex &vertex1 = _verticesData[v1];
 				MCVertex &vertex2 = _verticesData[v2];
 				MCVertex &vertex3 = _verticesData[v3];
 				MCVertex &vertex4 = _verticesData[v4];
-				MCVertex &vertex5 = _verticesData[v5];
-				MCVertex &vertex6 = _verticesData[v6];
-				MCVertex &vertex7 = _verticesData[v7];
-				MCVertex &vertex8 = _verticesData[v8];
+                MCVertex &vertex5 = _verticesData[v5];
+                MCVertex &vertex6 = _verticesData[v6];
+                MCVertex &vertex7 = _verticesData[v7];
+                MCVertex &vertex8 = _verticesData[v8];
 
 				// Build index in MC lookup table
 				unsigned int cubeIndex = 0;
@@ -108,17 +108,17 @@ void MCGrid::triangulate(Mesh& mesh)
 				if (vertex2.value<0.0) cubeIndex |= 2;
 				if (vertex3.value<0.0) cubeIndex |= 4;
 				if (vertex4.value<0.0) cubeIndex |= 8;
-				if (vertex5.value<0.0) cubeIndex |= 16;
+                if (vertex5.value<0.0) cubeIndex |= 16;
 				if (vertex6.value<0.0) cubeIndex |= 32;
 				if (vertex7.value<0.0) cubeIndex |= 64;
-				if (vertex8.value<0.0) cubeIndex |= 128;
+                if (vertex8.value<0.0) cubeIndex |= 128;
 
 				// Make sure it is a surface cell
-				if ((cubeIndex != 0) && (cubeIndex != 255))
+                if ((cubeIndex != 0) && (cubeIndex != 255))
 				{
 					int i=0;
-					while (MC_LookupTable::trianglesList[cubeIndex][i] != -1)
-					{
+                    while (MC_LookupTable::trianglesList[cubeIndex][i] != -1)
+                    {
 						// Compute/get triangle points on edges
 						int p1, p2, p3;
                         p1 = getEdgePoint(vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8,
@@ -132,132 +132,12 @@ void MCGrid::triangulate(Mesh& mesh)
                                           points);
 
 						// Create triangle
-						triangles.push_back(Mesh::Triangle(p1, p2, p3));
+                        triangles.push_back(Mesh::Triangle(p1, p2, p3));
 
-						i += 3;
-					}
+                        i += 3;
+                    }
 				}
-			}
-		}
-	}
-
-    std::cout << "nbPoints: " << points.size() << std::endl;
-}
-
-//------------------------------------------------------------------------------
-// Private functions
-//------------------------------------------------------------------------------
-void MCGrid::updateNormals()
-{
-	// Compute normals for every vertices with data
-	for (long v=0; v<getNbVertices(); ++v)
-	{
-		// Only process vertices with data
-		if (_vertices[v] == -1)
-		{
-			continue;
-		}
-
-		unsigned int ix = getXIndex(v);
-		unsigned int iy = getYIndex(v);
-		unsigned int iz = getZIndex(v);
-
-		double value = getScalarValue(ix, iy, iz);
-
-		Vector3DF& normal = getNormal(ix, iy, iz);
-
-		// Compute df/dx
-		// NOTE: We use a central difference to evaluate the gradient.
-		//       Furthermore, we do not divide by dx, since we will normalize
-		//       the normal afterward (this only works because dx==dy==dz).
-		int previousDataIndex = (ix>0) ? _vertices[getGridIndex(ix-1, iy, iz)] : -1;
-		int nextDataIndex = (ix<_resX-1) ? _vertices[getGridIndex(ix+1, iy, iz)] : -1;
-		if (previousDataIndex == -1)
-		{
-			if (nextDataIndex == -1)
-			{
-				// If previous and next cells have no value
-				// we consider that there is no variation
-				normal.x = 0.0;
-			}
-			else
-			{
-				// Extrapolate fromt ix and ix+1
-				normal.x = 2.0 * (_verticesData[nextDataIndex].value - value);
-			}
-		}
-		else if (nextDataIndex == -1)
-		{
-			// Extrapolate from ix-1 and ix
-			normal.x = 2.0 * (value - _verticesData[previousDataIndex].value);
-		}
-		else
-		{
-			normal.x = _verticesData[nextDataIndex].value -
-				_verticesData[previousDataIndex].value;
-		}
-
-		// Compute df/dy
-		previousDataIndex = (iy>0) ? _vertices[getGridIndex(ix, iy-1, iz)] : -1;
-		nextDataIndex = (iy<_resY-1) ? _vertices[getGridIndex(ix, iy+1, iz)] : -1;
-		if (previousDataIndex == -1)
-		{
-			if (nextDataIndex == -1)
-			{
-				// If previous and next cells have no value
-				// we consider that there is no variation
-				normal.y = 0.0;
-			}
-			else
-			{
-				// Extrapolate fromt iy and iy+1
-				normal.y = 2.0 * (_verticesData[nextDataIndex].value - value);
-			}
-		}
-		else if (nextDataIndex == -1)
-		{
-			// Extrapolate from iy-1 and iy
-			normal.y = 2.0 * (value - _verticesData[previousDataIndex].value);
-		}
-		else
-		{
-			normal.y = _verticesData[nextDataIndex].value -
-				_verticesData[previousDataIndex].value;
-		}
-
-		// Compute df/dz
-		previousDataIndex = (iz>0) ? _vertices[getGridIndex(ix, iy, iz-1)] : -1;
-		nextDataIndex = (iz<_resZ-1) ? _vertices[getGridIndex(ix, iy, iz+1)] : -1;
-		if (previousDataIndex == -1)
-		{
-			if (nextDataIndex == -1)
-			{
-				// If previous and next cells have no value
-				// we consider that there is no variation
-				normal.z = 0.0;
-			}
-			else
-			{
-				// Extrapolate fromt iy and iy+1
-				normal.z = 2.0 * (_verticesData[nextDataIndex].value - value);
-			}
-		}
-		else if (nextDataIndex == -1)
-		{
-			// Extrapolate from iy-1 and iy
-			normal.z = 2.0 * (value - _verticesData[previousDataIndex].value);
-		}
-		else
-		{
-			normal.z = _verticesData[nextDataIndex].value -
-				_verticesData[previousDataIndex].value;
-		}
-
-		// Normalize the normal!
-		double length = sqrt(normal.x*normal.x + normal.y*normal.y + normal.z*normal.z);
-		if (length != 0.0)
-		{
-			normal /= length;
+            }
 		}
 	}
 }
